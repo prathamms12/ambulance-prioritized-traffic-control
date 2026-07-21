@@ -1,0 +1,209 @@
+<!--
+=========================================================
+Project : Ambulance Prioritized Traffic Control System
+Author  : Pratham M S
+GitHub  : https://github.com/your-username
+Date    : July 2026
+
+Description:
+This web interface allows users to control an IoT-based
+ambulance traffic signal system. It supports both
+Automatic and Manual modes and communicates with a
+Raspberry Pi Pico through HTTP requests.
+
+© 2026 Pratham M S. All Rights Reserved.
+=========================================================
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambulance Traffic Signal Controller</title>
+
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial, Helvetica, sans-serif;
+        }
+
+        body{
+            background:#f4f6f9;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            min-height:100vh;
+        }
+
+        .container{
+            width:400px;
+            background:white;
+            padding:30px;
+            border-radius:10px;
+            box-shadow:0 5px 15px rgba(0,0,0,.15);
+        }
+
+        h2{
+            text-align:center;
+            margin-bottom:20px;
+            color:#222;
+        }
+
+        h3{
+            margin-bottom:10px;
+            color:#555;
+        }
+
+        label{
+            display:block;
+            margin:8px 0;
+            cursor:pointer;
+        }
+
+        #manual-controls{
+            display:none;
+            margin-top:20px;
+        }
+
+        button{
+            width:100%;
+            padding:12px;
+            margin-bottom:10px;
+            border:none;
+            border-radius:6px;
+            background:#007BFF;
+            color:white;
+            font-size:16px;
+            cursor:pointer;
+            transition:.3s;
+        }
+
+        button:hover{
+            background:#0056b3;
+        }
+
+        .status{
+            margin-top:15px;
+            padding:10px;
+            border-radius:6px;
+            background:#eef3ff;
+            text-align:center;
+            font-weight:bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Ambulance Traffic Signal Controller</h2>
+
+    <h3>Select Mode</h3>
+
+    <label>
+        <input type="radio" name="mode" value="automatic" checked>
+        Automatic Mode
+    </label>
+
+    <label>
+        <input type="radio" name="mode" value="manual">
+        Manual Mode
+    </label>
+
+    <div id="manual-controls">
+
+        <button onclick="controlLED('line1')">Line 1</button>
+
+        <button onclick="controlLED('line2')">Line 2</button>
+
+        <button onclick="controlLED('line3')">Line 3</button>
+
+        <button onclick="controlLED('line4')">Line 4</button>
+
+        <button onclick="controlLED('cycling')">Cycling Mode</button>
+
+    </div>
+
+    <div class="status" id="status">
+        Status : Ready
+    </div>
+
+</div>
+
+<script>
+
+    /*
+    =========================================================
+        CHANGE THIS TO YOUR PICO IP ADDRESS
+    =========================================================
+    */
+
+    const PICO_IP = "192.168.1.100";
+
+    const manualControls = document.getElementById("manual-controls");
+
+    const statusBox = document.getElementById("status");
+
+    document.querySelectorAll('input[name="mode"]').forEach(radio=>{
+
+        radio.addEventListener("change",()=>{
+
+            if(radio.checked){
+
+                if(radio.value==="manual"){
+
+                    manualControls.style.display="block";
+
+                    statusBox.innerHTML="Status : Manual Mode";
+
+                }else{
+
+                    manualControls.style.display="none";
+
+                    statusBox.innerHTML="Status : Automatic Mode";
+
+                }
+
+            }
+
+        });
+
+    });
+
+
+    function controlLED(action){
+
+        statusBox.innerHTML="Sending Command...";
+
+        fetch(`http://${PICO_IP}/manual/${action}`)
+
+        .then(response=>response.text())
+
+        .then(data=>{
+
+            console.log(data);
+
+            statusBox.innerHTML="Executed : "+action;
+
+        })
+
+        .catch(error=>{
+
+            console.error(error);
+
+            statusBox.innerHTML="Connection Failed";
+
+            alert("Unable to connect to Raspberry Pi Pico.");
+
+        });
+
+    }
+
+</script>
+
+</body>
+</html>
